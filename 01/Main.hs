@@ -3,20 +3,23 @@ import System.IO
 import qualified Data.Text as T
 import Data.List
 
-inventories :: T.Text -> [String]
-inventories = map T.unpack . T.splitOn "\n\n"
+inventories :: String -> [String]
+inventories = map T.unpack . T.splitOn "\n\n" . T.pack
 
 snacks ::  String -> [Int]
 snacks = map read . lines
 
-calories :: [Int] -> Int
-calories = sum
+elfCalories :: String -> [Int]
+elfCalories = map (sum . snacks) . inventories
 
 part1 :: String -> Int
-part1 = maximum . map (calories . snacks) . inventories . T.pack
+part1 = maximum . elfCalories
+
+topthree :: [Int] -> Int
+topthree = sum . take 3 . reverse . sort
 
 part2 :: String -> Int
-part2 = sum . take 3 . reverse . sort . map (calories . snacks) . inventories . T.pack
+part2 = topthree . elfCalories
 
 main :: IO ()
 main = do  
