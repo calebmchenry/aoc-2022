@@ -20,7 +20,7 @@ upsert key value xs = if exists then (key, (+ value) $ snd $ head fs):ufs else (
   where
     fs = filter ((== key) . fst) xs
     ufs = filter ((/= key) . fst) xs
-    exists = (== 1) $ length $ fs
+    exists = (== 1) $ length fs
 
 upDir :: String -> String
 upDir = reverse . tail . dropWhile (/= '.') . reverse
@@ -46,24 +46,26 @@ sumDirs ds = map (sumDir ds)  ds
 stateDirs :: State -> [(String, Int)]
 stateDirs (State _ dirs) = dirs
 
-part1 :: String -> Int
-part1 =
-  sum . filter (<= 100000) .
-  sumDirs .
-  stateDirs. foldl eval (State "" []) . map (parseLine . words) . lines
+parseInput :: String -> [OutputLine]
+parseInput = map (parseLine . words) . lines
 
-part2 :: String -> Int
-part2 c =
-  minimum $ filter ( >= remainingFreeSpaceNeeded) dirs
-  where
-    dirs = sumDirs $ stateDirs $ foldl eval (State "" []) $ map (parseLine . words) $ lines c
-    occupiedSpace = maximum dirs
-    remainingFreeSpaceNeeded = freeSpaceNeeded - (fileSystemSize - occupiedSpace)
+buildDirSizes :: [OutputLine] -> [Int]
+buildDirSizes = sumDirs . stateDirs. foldl eval (State "" []) 
+
+part1 :: String -> Int
+part1 = sum . filter (<= 100000) . buildDirSizes . parseInput
 
 fileSystemSize :: Int
 fileSystemSize = 70000000
 freeSpaceNeeded :: Int
 freeSpaceNeeded = 30000000
+
+part2 :: String -> Int
+part2 c = minimum $ filter ( >= remainingFreeSpaceNeeded) sizes
+  where
+    sizes = buildDirSizes $ parseInput c
+    occupiedSpace = maximum sizes
+    remainingFreeSpaceNeeded = freeSpaceNeeded - (fileSystemSize - occupiedSpace)
 
 main :: IO ()
 main = do
